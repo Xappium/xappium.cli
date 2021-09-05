@@ -1,0 +1,56 @@
+<Project>
+  <PropertyGroup>
+    <Authors>Dan Siegel</Authors>
+    <Owners>Xappium</Owners>
+    <Copyright>© Dan Siegel. All rights reserved.</Copyright>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/Xappium/xappium.uitest</PackageProjectUrl>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/Xappium/xappium.uitest.git</RepositoryUrl>
+    <PackageIcon>xappium-bot.png</PackageIcon>
+    <NeutralLanguage>en-US</NeutralLanguage>
+    <IncludeSymbols>True</IncludeSymbols>
+    <IncludeSource>True</IncludeSource>
+    <LangVersion>preview</LangVersion>
+    <RootSourceDirectory>$(MSBuildThisFileDirectory)</RootSourceDirectory>
+    <IsPackable Condition=" $(IsPackable) == '' ">false</IsPackable>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Nuget source link -->
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
+  </PropertyGroup>
+
+  <!-- CI Helpers -->
+  <PropertyGroup>
+    <PackageOutputPath>$(MSBuildThisFileDirectory)/Artifacts</PackageOutputPath>
+    <PackageOutputPath Condition=" $(BUILD_ARTIFACTSTAGINGDIRECTORY) != '' ">$(BUILD_ARTIFACTSTAGINGDIRECTORY)</PackageOutputPath>
+    <ContinuousIntegrationBuild>false</ContinuousIntegrationBuild>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(BUILD_ARTIFACTSTAGINGDIRECTORY)' != '' ">
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <SourceRoot Include="$(MSBuildThisFileDirectory)"/>
+    <PackageReference Include="Nerdbank.GitVersioning" Version="3.4.194" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" $(IsPackable) ">
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.0-beta-20204-02" PrivateAssets="All" />
+    <None Include="$(MSBuildThisFileDirectory)resources\xappium-bot.png"
+          Visible="False"
+          Pack="True"
+          PackagePath="" />
+  </ItemGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' And '$(IsPackable)' ">
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+  </PropertyGroup>
+</Project>
