@@ -3,6 +3,14 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26124.0
 MinimumVisualStudioVersion = 15.0.26124.0
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{4930E158-D124-4DD0-BA6C-C8799CB51400}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xappium.Cli", "src\Xappium.Cli\Xappium.Cli.csproj", "{FC288E3C-0814-4681-88BE-36A8D049343E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{CA8CA5B6-F79C-4AEA-83C3-F0849929E779}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xappium.Cli.Tests", "tests\Xappium.Cli.Tests\Xappium.Cli.Tests.csproj", "{1CA4DE78-6450-42BC-A35D-4E676073B788}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -14,5 +22,35 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FC288E3C-0814-4681-88BE-36A8D049343E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FC288E3C-0814-4681-88BE-36A8D049343E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FC288E3C-0814-4681-88BE-36A8D049343E}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{FC288E3C-0814-4681-88BE-36A8D049343E}.Debug|x64.Build.0 = Debug|Any CPU
+		{FC288E3C-0814-4681-88BE-36A8D049343E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{FC288E3C-0814-4681-88BE-36A8D049343E}.Debug|x86.Build.0 = Debug|Any CPU
+		{FC288E3C-0814-4681-88BE-36A8D049343E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FC288E3C-0814-4681-88BE-36A8D049343E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FC288E3C-0814-4681-88BE-36A8D049343E}.Release|x64.ActiveCfg = Release|Any CPU
+		{FC288E3C-0814-4681-88BE-36A8D049343E}.Release|x64.Build.0 = Release|Any CPU
+		{FC288E3C-0814-4681-88BE-36A8D049343E}.Release|x86.ActiveCfg = Release|Any CPU
+		{FC288E3C-0814-4681-88BE-36A8D049343E}.Release|x86.Build.0 = Release|Any CPU
+		{1CA4DE78-6450-42BC-A35D-4E676073B788}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1CA4DE78-6450-42BC-A35D-4E676073B788}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1CA4DE78-6450-42BC-A35D-4E676073B788}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{1CA4DE78-6450-42BC-A35D-4E676073B788}.Debug|x64.Build.0 = Debug|Any CPU
+		{1CA4DE78-6450-42BC-A35D-4E676073B788}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{1CA4DE78-6450-42BC-A35D-4E676073B788}.Debug|x86.Build.0 = Debug|Any CPU
+		{1CA4DE78-6450-42BC-A35D-4E676073B788}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1CA4DE78-6450-42BC-A35D-4E676073B788}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1CA4DE78-6450-42BC-A35D-4E676073B788}.Release|x64.ActiveCfg = Release|Any CPU
+		{1CA4DE78-6450-42BC-A35D-4E676073B788}.Release|x64.Build.0 = Release|Any CPU
+		{1CA4DE78-6450-42BC-A35D-4E676073B788}.Release|x86.ActiveCfg = Release|Any CPU
+		{1CA4DE78-6450-42BC-A35D-4E676073B788}.Release|x86.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{FC288E3C-0814-4681-88BE-36A8D049343E} = {4930E158-D124-4DD0-BA6C-C8799CB51400}
+		{1CA4DE78-6450-42BC-A35D-4E676073B788} = {CA8CA5B6-F79C-4AEA-83C3-F0849929E779}
 	EndGlobalSection
 EndGlobal
