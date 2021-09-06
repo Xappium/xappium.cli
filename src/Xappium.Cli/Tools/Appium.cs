@@ -5,18 +5,27 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using CliWrap;
-using Xappium.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace Xappium.Tools
 {
-    internal static class Appium
+    public class Appium
     {
         private const string defaultLog = "appium.log";
 
-        public static string Address { get; set; } = "127.0.0.1";
-        public static int Port { get; set; } = 4723;
+        private Node _node { get; }
+        private ILogger _logger { get; }
 
-        public static string Version
+        public Appium(Node node, ILogger<Appium> logger)
+        {
+            _node = node;
+            _logger = logger;
+        }
+
+        public string Address { get; set; } = "127.0.0.1";
+        public int Port { get; set; } = 4723;
+
+        public string Version
         {
             get
             {
@@ -45,29 +54,29 @@ namespace Xappium.Tools
                         var line = process.StandardOutput.ReadLine();
                         if (!string.IsNullOrEmpty(line))
                         {
-                            Logger.WriteLine($"Appium: {line} installed", LogLevel.Normal);
+                            _logger.LogInformation($"Appium: {line} installed");
                             return line;
                         }
                     }
                 }
                 catch(Win32Exception)
                 {
-                    Logger.WriteWarning("Appium is not currently installed");
+                    _logger.LogWarning("Appium is not currently installed");
                 }
 
                 return null;
             }
         }
 
-        public static async Task<bool> Install(CancellationToken cancellationToken)
+        public async Task<bool> Install(CancellationToken cancellationToken)
         {
             if (!string.IsNullOrEmpty(Version))
                 return true;
 
-            return Node.IsInstalled && await Node.InstallPackage("appium", cancellationToken).ConfigureAwait(false);
+            return _node.IsInstalled && await _node.InstallPackage("appium", cancellationToken).ConfigureAwait(false);
         }
 
-        public static Task<IDisposable> Run(string baseWorkingDirectory)
+        public Task<IDisposable> Run(string baseWorkingDirectory)
         {
             if (string.IsNullOrEmpty(Version))
                 throw new Exception("Appium is not installed.");
@@ -83,7 +92,7 @@ namespace Xappium.Tools
             {
                 if (line.Contains("listener started on ") && line.Contains($":{Port}"))
                 {
-                    Logger.WriteLine(line, LogLevel.Minimal, defaultLog);
+                    _logger.LogInformation(line);
 
                     if(!completed)
                         tcs.SetResult(new AppiumTask(cancellationSource));
@@ -92,7 +101,7 @@ namespace Xappium.Tools
                 else if(line.Contains("make sure there is no other instance of this server running already") ||
                     line.Contains("listen EADDRINUSE: address already in use"))
                 {
-                    Logger.WriteWarning(line, defaultLog);
+                    _logger.LogWarning(line);
 
                     if (!completed)
                         tcs.SetResult(new AppiumTask(cancellationSource));
@@ -100,7 +109,7 @@ namespace Xappium.Tools
                 }
                 else
                 {
-                    Logger.WriteLine(line, LogLevel.Verbose, defaultLog);
+                    //Logger.WriteLine(line, LogLevel.Verbose, defaultLog);
                 }
             }
 
@@ -108,7 +117,7 @@ namespace Xappium.Tools
             var stdErr = PipeTarget.Merge(
                 PipeTarget.ToFile(Path.Combine(logDirectory, "appium-error.log")),
                 PipeTarget.ToDelegate(HandleConsoleLine));
-            Logger.WriteLine("Starting Appium...", LogLevel.Minimal);
+            _logger.LogInformation("Starting Appium...");
 
             var toolPath = EnvironmentHelper.GetToolPath("appium");
             var cmd = Cli.Wrap(toolPath)

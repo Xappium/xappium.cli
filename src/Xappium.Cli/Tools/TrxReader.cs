@@ -3,13 +3,20 @@ using System.Collections.Generic;
 using System.IO;
 using System.Xml;
 using System.Xml.Serialization;
-using Xappium.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace Xappium.Tools
 {
-    internal static class TrxReader
+    internal class TrxReader
     {
-        public static TestRun Load(FileInfo fileInfo)
+        private ILogger _logger { get; }
+
+        public TrxReader(ILogger<TrxReader> logger)
+        {
+            _logger = logger;
+        }
+
+        public TestRun Load(FileInfo fileInfo)
         {
             var xml = File.ReadAllText(fileInfo.FullName);
             XmlSerializer serializer = new XmlSerializer(typeof(TestRun), "http://microsoft.com/schemas/VisualStudio/TeamTest/2010");
@@ -17,33 +24,33 @@ namespace Xappium.Tools
             return (TestRun)serializer.Deserialize(reader);
         }
 
-        public static void LogReport(this TestRun testRun)
+        public void LogReport(TestRun testRun)
         {
             if (testRun is null)
                 return;
 
-            Logger.WriteLine($"Test Run: {testRun.ResultSummary.Outcome}", LogLevel.Minimal);
+            _logger.LogInformation($"Test Run: {testRun.ResultSummary.Outcome}");
             var counters = testRun.ResultSummary.Counters;
-            Logger.WriteLine($"Total: {counters.Total}", LogLevel.Minimal);
+            _logger.LogInformation($"Total: {counters.Total}");
 
             if (counters.Total > 0)
             {
-                Logger.WriteLine($"Passed: {counters.Passed}", LogLevel.Minimal);
+                _logger.LogInformation($"Passed: {counters.Passed}");
 
                 if (counters.Timeout > 0)
-                    Logger.WriteWarning($"Timed Out: {counters.Timeout}");
+                    _logger.LogWarning($"Timed Out: {counters.Timeout}");
 
                 if (counters.NotExecuted > 0)
-                    Logger.WriteWarning($"Not Executed: {counters.NotExecuted}");
+                    _logger.LogWarning($"Not Executed: {counters.NotExecuted}");
 
                 if (counters.Error > 0)
-                    Logger.WriteError($"Errors: {counters.Error}");
+                    _logger.Log(LogLevel.Error, $"Errors: {counters.Error}");
 
                 if (counters.Failed > 0)
-                    Logger.WriteError($"Failed: {counters.Failed}");
+                    _logger.Log(LogLevel.Error, $"Failed: {counters.Failed}");
 
                 if (counters.Error > 0 || counters.Failed > 0)
-                    Logger.WriteError(testRun.ResultSummary.Output.StdOut);
+                    _logger.Log(LogLevel.Error, testRun.ResultSummary.Output.StdOut);
             }
         }
     }

@@ -2,9 +2,8 @@
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using Xappium.Android;
+using AndroidSdk;
 using Xappium.Apple;
-using Xappium.Logging;
 
 namespace Xappium
 {
@@ -12,13 +11,13 @@ namespace Xappium
     {
         private static readonly Lazy<bool> _lazyIsRunningOnMac = new Lazy<bool>(IsRunningOnMacInternal);
         private static readonly Lazy<bool> _lazyIsAndroidSupported = new Lazy<bool>(IsAndroidSupportedInternal);
-        private static readonly Lazy<bool> _lazyIsIOSSupported = new Lazy<bool>(IsIOSSupportedInternal);
+        //private static readonly Lazy<bool> _lazyIsIOSSupported = new Lazy<bool>(IsIOSSupportedInternal);
 
         public static bool IsRunningOnMac => _lazyIsRunningOnMac.Value;
 
         public static bool IsAndroidSupported => _lazyIsAndroidSupported.Value;
 
-        public static bool IsIOSSupported => _lazyIsIOSSupported.Value;
+        //public static bool IsIOSSupported => _lazyIsIOSSupported.Value;
 
         //From Managed.Windows.Forms/XplatUI
         [DllImport("libc")]
@@ -50,9 +49,8 @@ namespace Xappium
         {
             try
             {
-                AndroidTool.ValidateEnvironmentSettings();
-
-                return !string.IsNullOrEmpty(SdkManager.ToolPath);
+                var androidSdkHome = AndroidSdkManager.FindHome()?.FirstOrDefault();
+                return androidSdkHome is not null;
             }
             catch
             {
@@ -60,13 +58,13 @@ namespace Xappium
             }
         }
 
-        private static bool IsIOSSupportedInternal()
+        internal static bool IsIOSSupported(AppleSimulator appleSimulator)
         {
             try
             {
-                var hasSimulators = AppleSimulator.GetAvailableSimulators().Any();
-                if(IsRunningOnMac && !hasSimulators)
-                    Logger.WriteError("You appear to be running on macOS, but there are no available Simulators installed.");
+                var hasSimulators = appleSimulator.GetAvailableSimulators().Any();
+                if (IsRunningOnMac && !hasSimulators)
+                    Console.Error.WriteLine("You appear to be running on macOS, but there are no available Simulators installed.");
 
                 return IsRunningOnMac && hasSimulators;
             }

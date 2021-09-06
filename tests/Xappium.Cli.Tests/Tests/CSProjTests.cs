@@ -1,12 +1,27 @@
 ﻿using System;
 using System.IO;
+using Microsoft.Extensions.DependencyInjection;
 using Xappium.BuildSystem;
+using Xappium.Tools;
+using Xappium.Utilities;
 using Xunit;
 
 namespace Xappium.Cli.Tests
 {
     public class CSProjTests
     {
+        private IServiceProvider _services { get; }
+        private CSProjLoader CSProjLoader { get; }
+
+        public CSProjTests()
+        {
+            var services = new ServiceCollection();
+            services.AddTransient<DotNetTool>();
+            services.AddTransient<CSProjLoader>();
+            _services = services.BuildServiceProvider();
+            CSProjLoader = _services.GetRequiredService<CSProjLoader>();
+        }
+
         [Theory]
         [InlineData("SampleAndroidProject.xml", typeof(AndroidProjectFile))]
         [InlineData("SampleDotNetMultiTargetProject.xml", typeof(DotNetMauiProjectFile))]
@@ -16,7 +31,7 @@ namespace Xappium.Cli.Tests
             var filePath = new FileInfo(Path.Combine("Resources", fileName));
             var output = new DirectoryInfo(Path.Combine("test-gen", Path.GetFileNameWithoutExtension(fileName), "bin"));
             CSProjFile proj = null;
-            var ex = Record.Exception(() => proj = CSProjFile.Load(filePath, output, "iOS"));
+            var ex = Record.Exception(() => proj = CSProjLoader.Load(filePath, output, OSPlatform.iOS));
 
             Assert.Null(ex);
             Assert.NotNull(proj);
@@ -29,7 +44,7 @@ namespace Xappium.Cli.Tests
             var filePath = new FileInfo(Path.Combine("Resources", "SampleiOSProject.xml"));
             var output = new DirectoryInfo(Path.Combine("test-gen", "SampleiOSProject", "bin"));
             CSProjFile proj = null;
-            var ex = Record.Exception(() => proj = CSProjFile.Load(filePath, output, "iOS"));
+            var ex = Record.Exception(() => proj = CSProjLoader.Load(filePath, output, OSPlatform.iOS));
 
 #if WINDOWS_NT
             Assert.NotNull(ex);
@@ -50,7 +65,7 @@ namespace Xappium.Cli.Tests
             var output = new DirectoryInfo(Path.Combine("test-gen", Path.GetFileNameWithoutExtension(fileName), "bin"));
 
             CSProjFile proj = null;
-            var ex = Record.Exception(() => proj = CSProjFile.Load(filePath, output, "Foo"));
+            var ex = Record.Exception(() => proj = CSProjLoader.Load(filePath, output, OSPlatform.Other));
 
             Assert.NotNull(ex);
             Assert.Null(proj);

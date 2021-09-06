@@ -6,16 +6,20 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using CliWrap;
-using Xappium.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace Xappium.Tools
 {
-    internal static class MSBuild
+    public class MSBuild
     {
-        public static readonly string ToolPath;
+        public readonly string ToolPath;
 
-        static MSBuild()
+        private ILogger _logger { get; }
+
+        public MSBuild(ILogger<MSBuild> logger)
         {
+            _logger = logger;
+
             if(EnvironmentHelper.IsRunningOnMac)
             {
                 ToolPath = "msbuild";
@@ -29,9 +33,9 @@ namespace Xappium.Tools
                 return;
             }
 
-            var vsRootPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Microsoft Visual Studio", "2019");
+            var vsRootPath = GetRootPath();
 
-            if (!Directory.Exists(vsRootPath))
+            if (string.IsNullOrEmpty(vsRootPath))
                 return;
 
             var installPath = new[]
@@ -50,9 +54,22 @@ namespace Xappium.Tools
             ToolPath = installPath.EnumerateFiles("msbuild.exe", SearchOption.AllDirectories)
                 .Select(x => x.FullName)
                 .FirstOrDefault();
+
+            if(!string.IsNullOrEmpty(ToolPath))
+                logger.LogInformation($"Using Visual Studio {new DirectoryInfo(vsRootPath).Name} {installPath.Name}");
         }
 
-        public static async Task Build(string projectPath, string baseWorkingDirectory, IDictionary<string, string> props, CancellationToken cancellationToken, string target = null)
+        private static string GetRootPath()
+        {
+            return new[]
+            {
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Microsoft Visual Studio", "2022"),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Microsoft Visual Studio", "2022"),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Microsoft Visual Studio", "2019")
+            }.FirstOrDefault(x => Directory.Exists(x));
+        }
+
+        public async Task Build(string projectPath, string baseWorkingDirectory, IDictionary<string, string> props, CancellationToken cancellationToken, string target = null)
         {
             if (string.IsNullOrEmpty(ToolPath))
                 throw new Exception("No installation of Visual Studio could be found. Could not locate msbuild.");
@@ -82,7 +99,7 @@ namespace Xappium.Tools
                     var logoutput = Path.Combine(baseWorkingDirectory, "logs", $"{Path.GetFileNameWithoutExtension(projectPath)}.binlog");
                     b.Add($"/bl:{logoutput}");
                 })
-                .WithStandardOutputPipe(PipeTarget.ToDelegate(l => Logger.WriteLine(l, LogLevel.Normal)))
+                .WithStandardOutputPipe(PipeTarget.ToDelegate(l => _logger.LogInformation(l)))
                 .WithStandardErrorPipe(PipeTarget.ToStringBuilder(stdErrBuffer))
                 .WithValidation(CommandResultValidation.None)
                 .ExecuteAsync(cancellationToken)

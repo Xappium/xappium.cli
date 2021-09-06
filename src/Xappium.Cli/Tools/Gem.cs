@@ -5,15 +5,21 @@ using System.Threading;
 using System.Threading.Tasks;
 using CliWrap;
 using CliWrap.Builders;
-using Xappium.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace Xappium.Tools
 {
-    public static class Gem
+    public class Gem
     {
         public static readonly string ToolPath = EnvironmentHelper.GetToolPath("gem");
+        private ILogger _logger { get; }
 
-        public static Task Install(string packageName, CancellationToken cancellationToken)
+        public Gem(ILogger<Gem> logger)
+        {
+            _logger = logger;
+        }
+
+        public Task Install(string packageName, CancellationToken cancellationToken)
         {
             return ExecuteInternal(b =>
             {
@@ -22,10 +28,10 @@ namespace Xappium.Tools
             }, cancellationToken);
         }
 
-        public static Task InstallXcPretty(CancellationToken cancellationToken) =>
+        public Task InstallXcPretty(CancellationToken cancellationToken) =>
             Install("xcpretty", cancellationToken);
 
-        internal static async Task<string> ExecuteInternal(Action<ArgumentsBuilder> configure, CancellationToken cancellationToken)
+        internal async Task<string> ExecuteInternal(Action<ArgumentsBuilder> configure, CancellationToken cancellationToken)
         {
             if (cancellationToken.IsCancellationRequested)
                 return null;
@@ -34,11 +40,11 @@ namespace Xappium.Tools
             var builder = new ArgumentsBuilder();
             configure(builder);
             var args = builder.Build();
-            Logger.WriteLine($"{toolPath} {args}", LogLevel.Normal);
+            _logger.LogInformation($"{toolPath} {args}");
             var stdErrBuffer = new StringBuilder();
             var stdOutBuffer = new StringBuilder();
             var stdOut = PipeTarget.Merge(PipeTarget.ToStringBuilder(stdOutBuffer),
-                PipeTarget.ToDelegate(l => Logger.WriteLine(l, LogLevel.Verbose)));
+                PipeTarget.ToDelegate(l => _logger.LogDebug(l)));
 
             var result = await Cli.Wrap(toolPath)
                 .WithArguments(args)
@@ -51,7 +57,7 @@ namespace Xappium.Tools
             if (!string.IsNullOrEmpty(stdErr))
             {
                 if (stdErr.Split('\n').Select(x => x.Trim()).All(x => x.StartsWith("Warning:", StringComparison.InvariantCultureIgnoreCase)))
-                    Logger.WriteWarning(stdErr);
+                    _logger.LogWarning(stdErr);
                 else
                     throw new Exception(stdErr);
             }
