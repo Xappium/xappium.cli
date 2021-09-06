@@ -5,17 +5,24 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using Xappium.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace Xappium.Apple
 {
-    internal static class AppleSimulator
+    internal class AppleSimulator
     {
         private const string AppleSimulatorRuntimeKey = "com.apple.CoreSimulator.SimRuntime.iOS-";
 
-        public static void ShutdownAllSimulators()
+        private ILogger _logger { get; }
+
+        public AppleSimulator(ILogger<AppleSimulator> logger)
         {
-            Logger.WriteLine("Shutting down simulators", LogLevel.Detailed);
+            _logger = logger;
+        }
+
+        public void ShutdownAllSimulators()
+        {
+            _logger.LogInformation("Shutting down simulators");
             using var process = new Process
             {
                 StartInfo = new ProcessStartInfo("xcrun", "simctl shutdown all")
@@ -31,9 +38,9 @@ namespace Xappium.Apple
             }
         }
 
-        public static IEnumerable<AppleDeviceInfo> GetAvailableSimulators()
+        public IEnumerable<AppleDeviceInfo> GetAvailableSimulators()
         {
-            Logger.WriteLine("Getting Available Simulators", LogLevel.Normal);
+            _logger.LogInformation("Getting Available Simulators");
             var results = new Dictionary<int, string>();
             using var process = new Process
             {
@@ -49,7 +56,7 @@ namespace Xappium.Apple
             while(!process.StandardOutput.EndOfStream)
             {
                 var line = process.StandardOutput.ReadLine();
-                Logger.WriteLine(line, LogLevel.Detailed);
+                _logger.LogDebug(line);
                 sb.Append(line);
             }
 
@@ -69,10 +76,10 @@ namespace Xappium.Apple
                 .Where(x => x.IsAvailable);
         }
 
-        public static AppleDeviceInfo GetSimulator()
+        public AppleDeviceInfo GetSimulator()
         {
             var devices = GetAvailableSimulators();
-            Logger.WriteLine("Getting Default iPhone Simulator", LogLevel.Normal);
+            _logger.LogInformation("Getting Default iPhone Simulator");
             return devices
                 .Where(x => !x.Name.Contains("Max") && Regex.IsMatch(x.Name, @"^iPhone \d\d Pro") && x.IsAvailable)
                 .OrderByDescending(x => x.OSVersion)

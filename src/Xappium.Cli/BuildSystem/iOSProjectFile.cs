@@ -4,20 +4,29 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Xappium.Apple;
 using Xappium.Tools;
+using Xappium.Utilities;
 
 namespace Xappium.BuildSystem
 {
     [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "iOS is named correctly")]
     internal class iOSProjectFile : CSProjFile
     {
-        public iOSProjectFile(FileInfo projectFile, DirectoryInfo outputDirectory)
+        private MSBuild _msBuild { get; }
+        private AppleSimulator _appleSimulator { get; }
+        private ILogger _logger { get; }
+
+        public iOSProjectFile(FileInfo projectFile, DirectoryInfo outputDirectory, MSBuild msBuild, AppleSimulator appleSimulator, ILogger<iOSProjectFile> logger)
             : base(projectFile, outputDirectory)
         {
+            _appleSimulator = appleSimulator;
+            _msBuild = msBuild;
+            _logger = logger;
         }
 
-        public override string Platform => "iOS";
+        public override OSPlatform Platform => OSPlatform.iOS;
 
         public override async Task Build(string configuration, CancellationToken cancellationToken)
         {
@@ -30,22 +39,12 @@ namespace Xappium.BuildSystem
             };
 
             // msbuild ../sample/TestApp.iOS/TestApp.iOS.csproj /p:Platform=iPhoneSimulator /p:Configuration=Release /p:OutputPath=$UITESTPATH/bin/
-            await MSBuild.Build(ProjectFile.FullName, OutputDirectory.Parent.Parent.FullName, props, cancellationToken).ConfigureAwait(false);
+            await _msBuild.Build(ProjectFile.FullName, OutputDirectory.Parent.Parent.FullName, props, cancellationToken).ConfigureAwait(false);
         }
 
         public override Task<bool> IsSupported()
         {
-            AppleDeviceInfo simulator = null;
-            try
-            {
-                simulator = AppleSimulator.GetSimulator();
-            }
-            catch(Exception ex)
-            {
-                Logging.Logger.WriteError(ex);
-            }
-
-            return Task.FromResult(simulator != null);
+            return Task.FromResult(EnvironmentHelper.IsIOSSupported(_appleSimulator));
         }
     }
 }

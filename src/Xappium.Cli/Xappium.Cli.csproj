@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -19,5 +19,36 @@
     <PackageReference Include="McMaster.Extensions.Hosting.CommandLine" Version="3.1.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="5.0.0" />
     <PackageReference Include="System.Reactive" Version="5.0.0" />
+    <PackageReference Include="AndroidSdk" Version="0.5.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Boots.Core">
+      <HintPath>..\..\external\dotnet-maui-check\libs\Boots.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="ICSharpCode.SharpZipLib">
+      <HintPath>..\..\external\dotnet-maui-check\libs\ICSharpCode.SharpZipLib.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.DotNet.MSBuildSdkResolver">
+      <HintPath>..\..\external\dotnet-maui-check\libs\Microsoft.DotNet.MSBuildSdkResolver.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.AndroidTools">
+      <HintPath>..\..\external\dotnet-maui-check\libs\Mono.AndroidTools.dll</HintPath>
+    </Reference>
+    <Reference Include="Xamarin.Android.Tools.AndroidSdk">
+      <HintPath>..\..\external\dotnet-maui-check\libs\Xamarin.Android.Tools.AndroidSdk.dll</HintPath>
+    </Reference>
+    <Reference Include="Xamarin.AndroidTools">
+      <HintPath>..\..\external\dotnet-maui-check\libs\Xamarin.AndroidTools.dll</HintPath>
+    </Reference>
+    <Reference Include="Xamarin.Installer.AndroidSDK">
+      <HintPath>..\..\external\dotnet-maui-check\libs\Xamarin.Installer.AndroidSDK.dll</HintPath>
+    </Reference>
+    <Reference Include="Xamarin.Installer.AndroidSDK.Manager">
+      <HintPath>..\..\external\dotnet-maui-check\libs\Xamarin.Installer.AndroidSDK.Manager.dll</HintPath>
+    </Reference>
+    <Reference Include="Xamarin.Installer.Common">
+      <HintPath>..\..\external\dotnet-maui-check\libs\Xamarin.Installer.Common.dll</HintPath>
+    </Reference>
   </ItemGroup>
 </Project>

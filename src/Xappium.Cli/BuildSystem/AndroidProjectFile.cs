@@ -3,17 +3,21 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Xappium.Tools;
+using Xappium.Utilities;
 
 namespace Xappium.BuildSystem
 {
     internal class AndroidProjectFile : CSProjFile
     {
-        public AndroidProjectFile(FileInfo projectFile, DirectoryInfo outputDirectory)
+        private MSBuild _msBuild { get; }
+
+        public AndroidProjectFile(FileInfo projectFile, DirectoryInfo outputDirectory, MSBuild msBuild)
             : base(projectFile, outputDirectory)
         {
+            _msBuild = msBuild;
         }
 
-        public override string Platform => "Android";
+        public override OSPlatform Platform => OSPlatform.Android;
 
         public override async Task Build(string configuration, CancellationToken cancellationToken)
         {
@@ -26,7 +30,7 @@ namespace Xappium.BuildSystem
             };
 
             // msbuild ../sample/TestApp.Android/TestApp.Android.csproj /p:Configuration=Release /p:AndroidPackageFormat=apk /p:AndroidSupportedAbis=x86 /p:OutputPath=$UITESTPATH/bin/ /t:SignAndroidPackage
-            await MSBuild.Build(ProjectFile.FullName, OutputDirectory.Parent.Parent.FullName, props, cancellationToken, "SignAndroidPackage").ConfigureAwait(false);
+            await _msBuild.Build(ProjectFile.FullName, OutputDirectory.Parent.Parent.FullName, props, cancellationToken, "SignAndroidPackage").ConfigureAwait(false);
         }
 
         public override Task<bool> IsSupported() =>

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using Xappium.Logging;
 
 namespace Xappium.Cli.Tests
 {
@@ -16,7 +15,7 @@ namespace Xappium.Cli.Tests
 
             testDir.Create();
 
-            Logger.SetWorkingDirectory(testDir.FullName);
+            //Logger.SetWorkingDirectory(testDir.FullName);
         }
     }
 }

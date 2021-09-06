@@ -6,13 +6,20 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using CliWrap;
-using Xappium.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace Xappium.Tools
 {
-    internal static class Node
+    public class Node
     {
-        public static string Version
+        private ILogger _logger { get; }
+
+        public Node(ILogger<Node> logger)
+        {
+            _logger = logger;
+        }
+
+        public string Version
         {
             get
             {
@@ -30,7 +37,7 @@ namespace Xappium.Tools
                     var line = process.StandardOutput.ReadLine();
                     if (line.StartsWith("v"))
                     {
-                        Logger.WriteLine($"Node: {line} installed", LogLevel.Normal);
+                        _logger.LogInformation($"Node: {line} installed");
                         return line;
                     }
                 }
@@ -39,15 +46,15 @@ namespace Xappium.Tools
             }
         }
 
-        public static bool IsInstalled => !string.IsNullOrEmpty(Version);
+        public bool IsInstalled => !string.IsNullOrEmpty(Version);
 
-        public static async Task<bool> InstallPackage(string packageName, CancellationToken cancellationToken)
+        public async Task<bool> InstallPackage(string packageName, CancellationToken cancellationToken)
         {
             var toolPath = EnvironmentHelper.GetToolPath("npm");
-            Logger.WriteLine($"{toolPath} install -g {packageName}", LogLevel.Verbose);
+            _logger.LogInformation($"{toolPath} install -g {packageName}");
             var isMac = EnvironmentHelper.IsRunningOnMac;
             var errorLines = new List<string>();
-            var stdOut = PipeTarget.ToDelegate(l => Logger.WriteLine(l, LogLevel.Verbose));
+            var stdOut = PipeTarget.ToDelegate(l => _logger.LogInformation(l));
             var stdErr = PipeTarget.ToDelegate(l =>
             {
                 if (string.IsNullOrEmpty(l) || (isMac && l.Contains("did not detect a Windows system")))

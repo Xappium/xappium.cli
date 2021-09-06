@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using CliWrap;
 using CliWrap.Builders;
-using Xappium.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace Xappium.Tools
 {
@@ -13,7 +13,14 @@ namespace Xappium.Tools
     {
         public static readonly string ToolPath = EnvironmentHelper.GetToolPath("pip3");
 
-        public static Task UpgradePip(CancellationToken cancellationToken) =>
+        private ILogger _logger { get; }
+
+        public Pip(ILogger<Pip> logger)
+        {
+            _logger = logger;
+        }
+
+        public Task UpgradePip(CancellationToken cancellationToken) =>
             ExecuteInternal("python3", b =>
                 b.Add("-m")
                  .Add("pip")
@@ -21,13 +28,13 @@ namespace Xappium.Tools
                  .Add("--upgrade")
                  .Add("pip"), cancellationToken);
 
-        public static Task Install(string packageName, CancellationToken cancellationToken) =>
+        public Task Install(string packageName, CancellationToken cancellationToken) =>
             ExecuteInternal(ToolPath, b => b.Add("install").Add(packageName), cancellationToken);
 
-        public static Task InstallIdbClient(CancellationToken cancellationToken) =>
+        public Task InstallIdbClient(CancellationToken cancellationToken) =>
             Install("fb-idb", cancellationToken);
 
-        internal static async Task<string> ExecuteInternal(string toolPath, Action<ArgumentsBuilder> configure, CancellationToken cancellationToken)
+        internal async Task<string> ExecuteInternal(string toolPath, Action<ArgumentsBuilder> configure, CancellationToken cancellationToken)
         {
             if (cancellationToken.IsCancellationRequested)
                 return null;
@@ -35,11 +42,12 @@ namespace Xappium.Tools
             var builder = new ArgumentsBuilder();
             configure(builder);
             var args = builder.Build();
-            Logger.WriteLine($"{toolPath} {args}", LogLevel.Normal);
+
+            _logger.LogInformation($"{toolPath} {args}");
             var stdErrBuffer = new StringBuilder();
             var stdOutBuffer = new StringBuilder();
             var stdOut = PipeTarget.Merge(PipeTarget.ToStringBuilder(stdOutBuffer),
-                PipeTarget.ToDelegate(l => Logger.WriteLine(l, LogLevel.Verbose)));
+                PipeTarget.ToDelegate(l => _logger.LogDebug(l)));
 
             var result = await Cli.Wrap(toolPath)
                 .WithArguments(args)
@@ -52,7 +60,7 @@ namespace Xappium.Tools
             if (!string.IsNullOrEmpty(stdErr))
             {
                 if (stdErr.Split('\n').Select(x => x.Trim()).All(x => x.StartsWith("Warning:", StringComparison.InvariantCultureIgnoreCase)))
-                    Logger.WriteWarning(stdErr);
+                    _logger.LogWarning(stdErr);
                 else
                     throw new Exception(stdErr);
             }

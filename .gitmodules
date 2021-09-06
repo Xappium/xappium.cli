@@ -1,0 +1,3 @@
+[submodule "external/dotnet-maui-check"]
+	path = external/dotnet-maui-check
+	url = https://github.com/Redth/dotnet-maui-check.git

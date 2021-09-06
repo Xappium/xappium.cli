@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Reflection;
 using McMaster.Extensions.CommandLineUtils;
 
 namespace Xappium.Commands
@@ -9,8 +7,9 @@ namespace Xappium.Commands
            Name = "xappium",
            FullName = "Xappium UITest CLI",
            Description = "Project Home: https://github.com/xappium/xappium.uitest")]
-    [Subcommand(typeof(PrepareCommand))]
-    [Subcommand(typeof(TestCommand))]
+    [Subcommand(typeof(AndroidCommand), typeof(iOSCommand))]
+    [HelpOption]
+    [VersionOptionFromMember(MemberName = nameof(GetVersion))]
     public class XappiumCommand
     {
         private CommandLineApplication _app { get; }
@@ -23,5 +22,8 @@ namespace Xappium.Commands
         }
 
         private void OnExecute() => _console.WriteLine(_app.GetHelpText());
+
+        private static string GetVersion()
+            => typeof(XappiumCommand).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
     }
 }

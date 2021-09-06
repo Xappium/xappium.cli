@@ -1,5 +1,7 @@
 ﻿using System;
 using System.IO;
+using Microsoft.Extensions.Logging;
+using Moq;
 using Xappium.Tools;
 using Xunit;
 
@@ -17,21 +19,24 @@ namespace Xappium.Cli.Tests
         [Fact]
         public void DoesNotThrowException()
         {
-            var ex = Record.Exception(() => TrxReader.Load(TrxFile));
+            var trx = new TrxReader(Mock.Of<ILogger<TrxReader>>());
+            var ex = Record.Exception(() => trx.Load(TrxFile));
             Assert.Null(ex);
         }
 
         [Fact]
         public void ContainsTwoTestDefinitions()
         {
-            var trx = TrxReader.Load(TrxFile);
+            var reader = new TrxReader(Mock.Of<ILogger<TrxReader>>());
+            var trx = reader.Load(TrxFile);
             Assert.Equal(2, trx.TestDefinitions.UnitTest.Count);
         }
 
         [Fact]
         public void TwoTestsPassed()
         {
-            var trx = TrxReader.Load(TrxFile);
+            var reader = new TrxReader(Mock.Of<ILogger<TrxReader>>());
+            var trx = reader.Load(TrxFile);
             Assert.Equal(2, trx.ResultSummary.Counters.Passed);
         }
     }

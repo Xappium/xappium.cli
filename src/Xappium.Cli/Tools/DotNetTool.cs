@@ -7,13 +7,22 @@ using System.Threading.Tasks;
 using CliWrap;
 using CliWrap.Builders;
 using McMaster.Extensions.CommandLineUtils;
-using Xappium.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace Xappium.Tools
 {
-    internal static class DotNetTool
+    internal class DotNetTool
     {
-        public static async Task Test(string projectPath, string outputPath, string configuration, string resultsDirectory, CancellationToken cancellationToken)
+        private ILogger _logger { get; }
+        private TrxReader _trxReader { get; }
+
+        public DotNetTool(ILogger<DotNetTool> logger, TrxReader trxReader)
+        {
+            _logger = logger;
+            _trxReader = trxReader;
+        }
+
+        public async Task Test(string projectPath, string outputPath, string configuration, string resultsDirectory, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(configuration))
                 configuration = "Release";
@@ -30,14 +39,14 @@ namespace Xappium.Tools
                      .Add($"--diag:{logFile}")
                      .Build();
 
-            Logger.WriteLine($"Running dotnet test on '{projectPath}'", LogLevel.Minimal);
+            _logger.Log(LogLevel.Information, $"Running dotnet test on '{projectPath}'");
             try
             {
-                await Execute(args, LogLevel.Normal, cancellationToken);
+                await Execute(args, LogLevel.Information, cancellationToken);
             }
             catch (Exception ex)
             {
-                Logger.WriteError(ex.Message);
+                _logger.Log(LogLevel.Error, ex.Message);
             }
             finally
             {
@@ -45,7 +54,7 @@ namespace Xappium.Tools
             }
         }
 
-        private static void ReadTestResults(string resultsDirectory)
+        private void ReadTestResults(string resultsDirectory)
         {
             try
             {
@@ -59,32 +68,33 @@ namespace Xappium.Tools
                     return;
                 }
 
-                var trx = TrxReader.Load(trxFileInfo);
-                trx.LogReport();
+                var trx = _trxReader.Load(trxFileInfo);
+                _trxReader.LogReport(trx);
             }
             catch(Exception ex)
             {
-                Logger.WriteWarning("Error reading test results");
-                Logger.WriteWarning(ex.ToString());
+                _logger.LogWarning("Error reading test results");
+                _logger.LogWarning(ex.ToString());
                 // suppress errors
             }
         }
 
-        public static Task Build(Action<ArgumentsBuilder> configure, CancellationToken cancellationToken)
+        public Task Build(Action<ArgumentsBuilder> configure, CancellationToken cancellationToken)
         {
             var builder = new ArgumentsBuilder()
                 .Add("build");
             configure(builder);
 
-            return Execute(builder.Build(), LogLevel.Detailed, cancellationToken);
+            return Execute(builder.Build(), LogLevel.Debug, cancellationToken);
         }
 
-        private static async Task Execute(string args, LogLevel logLevel, CancellationToken cancellationToken)
+        private async Task Execute(string args, LogLevel logLevel, CancellationToken cancellationToken)
         {
             var cliTool = DotNetExe.FullPath ?? "dotnet";
-            Logger.WriteLine($"{cliTool} {args}", LogLevel.Normal);
+            _logger.Log(logLevel, $"{cliTool} {args}");
+
             var stdErrBuffer = new StringBuilder();
-            var stdOut = PipeTarget.ToDelegate(l => Logger.WriteLine(l, logLevel));
+            var stdOut = PipeTarget.ToDelegate(l => _logger.Log(logLevel, l));
             var stdErr = PipeTarget.ToStringBuilder(stdErrBuffer);
 
             var result = await Cli.Wrap(cliTool)

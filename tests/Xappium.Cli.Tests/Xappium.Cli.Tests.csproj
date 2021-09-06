@@ -19,13 +19,26 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="Moq" Version="4.16.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Remove="Moq" />
+  </ItemGroup>
   <ItemGroup>
     <None Update="Resources/*.xml" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Xappium.Cli\Xappium.Cli.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="Tests\Tools\GemTests.cs" />
+    <Compile Remove="Tests\Tools\MSBuildTests.cs" />
+    <Compile Remove="Tests\Tools\BrewTests.cs" />
+    <Compile Remove="Tests\Tools\AppiumTests.cs" />
+    <Compile Remove="Tests\Tools\PipTests.cs" />
+    <Compile Remove="Tests\Tools\NodeTests.cs" />
+    <Compile Remove="Tests\Tools\ToolCollection.cs" />
   </ItemGroup>
 </Project>
