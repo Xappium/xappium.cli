@@ -32,7 +32,7 @@ jobs:
 
       - name: UITests - ${{ matrix.os }}
         run: |
-          dotnet run --project src/Xappium.Cli/Xappium.Cli.csproj -c Release -- test -uitest sample/TestApp.UITests/TestApp.UITests.csproj -app sample/TestApp.${{ matrix.os }}/TestApp.${{ matrix.os }}.csproj --logger normal
+          dotnet run --project src/Xappium.Cli/Xappium.Cli.csproj -c Release -- ${{ lower(matrix.os) }} test -uitest sample/TestApp.UITests/TestApp.UITests.csproj --app-project sample/TestApp.${{ matrix.os }}/TestApp.${{ matrix.os }}.csproj
 
       - name: Report UITest Results
         uses: zyborg/dotnet-tests-report@v1
